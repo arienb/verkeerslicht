@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Verkeerslicht Configuratie</title>
+  <script src="https://unpkg.com/paho-mqtt/mqttws31.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    label { display: block; margin-top: 1em; }
+    input { width: 80px; }
+    button { margin-top: 1.5em; padding: 0.5em 1em; }
+    #status { margin-top: 2em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Configuratie Verkeerslicht</h1>
+
+  <label>Groentijd A (seconden):
+    <input type="number" id="greenA" value="20">
+  </label>
+
+  <label>Groentijd B (seconden):
+    <input type="number" id="greenB" value="20">
+  </label>
+
+  <label>Clear tijd (beide rood, seconden):
+    <input type="number" id="clear" value="5">
+  </label>
+
+  <button onclick="sendConfig()">Verstuur Configuratie</button>
+
+  <div id="status">Nog niet verbonden...</div>
+
+  <script>
+    // Pas dit aan naar jouw broker
+    const brokerHost = "ws://localhost:9001"; // Mosquitto WebSocket poort
+    const clientId = "WebInterface_" + Math.random().toString(16).substr(2, 8);
+
+    const client = new Paho.MQTT.Client(brokerHost, clientId);
+
+    client.onConnectionLost = (responseObject) => {
+      document.getElementById("status").innerText = "Verbinding verloren!";
+    };
+
+    client.onMessageArrived = (message) => {
+      console.log("MQTT RX:", message.destinationName, message.payloadString);
+    };
+
+    function onConnect() {
+      document.getElementById("status").innerText = "Verbonden met broker";
+      // Subscribe op status topic (optioneel)
+      client.subscribe("traffic/status");
+    }
+
+    client.connect({ onSuccess: onConnect });
+
+    function sendConfig() {
+      const a = document.getElementById("greenA").value;
+      const b = document.getElementById("greenB").value;
+      const c = document.getElementById("clear").value;
+
+      const payload = `${a},${b},${c}`;
+      const message = new Paho.MQTT.Message(payload);
+      message.destinationName = "traffic/config";
+      client.send(message);
+
+      document.getElementById("status").innerText =
+        "Config verzonden: " + payload;
+    }
+  </script>
+</body>
+</html>

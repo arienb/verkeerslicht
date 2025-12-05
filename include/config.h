@@ -8,13 +8,13 @@
 // On node B (slave):
 //   NODE_ID  'B'
 //   IS_MASTER 0
-#define NODE_ID   'A'    // change to 'B' on the second board
-#define IS_MASTER 1      // 1 = master (A), 0 = slave (B)
+#define NODE_ID   'B'    // change to 'B' on the second board
+#define IS_MASTER 0      // 1 = master (A), 0 = slave (B)
 
 // ========= LED PINS (adjust to YOUR wiring) =========
-static const uint8_t PIN_LED_RED    = 100;
-static const uint8_t PIN_LED_YELLOW = 1015;
-static const uint8_t PIN_LED_GREEN  = 102;
+static const uint8_t PIN_LED_RED    = 0;
+static const uint8_t PIN_LED_YELLOW = 4;
+static const uint8_t PIN_LED_GREEN  = 2;
 
 // ========= LoRa (SX1276/78) PINS + RADIO SETTINGS =========
 // Use same pins & init style as your working example

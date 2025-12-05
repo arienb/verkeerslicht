@@ -360,7 +360,7 @@ void commInit()
     // basic radio settings
     LoRa.setSignalBandwidth(125E3);
     LoRa.setSpreadingFactor(8);
-    LoRa.setCodingRate4(6);
+    LoRa.setCodingRate4(5);
     LoRa.enableCrc();
 
 #if IS_MASTER
