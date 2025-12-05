@@ -12,9 +12,9 @@
 #define IS_MASTER 1      // 1 = master (A), 0 = slave (B)
 
 // ========= LED PINS (adjust to YOUR wiring) =========
-static const uint8_t PIN_LED_RED    = 14;
-static const uint8_t PIN_LED_YELLOW = 12;
-static const uint8_t PIN_LED_GREEN  = 13;
+static const uint8_t PIN_LED_RED    = 100;
+static const uint8_t PIN_LED_YELLOW = 1015;
+static const uint8_t PIN_LED_GREEN  = 102;
 
 // ========= LoRa (SX1276/78) PINS + RADIO SETTINGS =========
 // Use same pins & init style as your working example
@@ -44,7 +44,7 @@ static const char* const WIFI_SSID = "TP-Link_42C4";
 static const char* const WIFI_PASS = "66243359";
 
 // You can use a hostname here (DNS must be able to resolve it)
-static const char* const MQTT_HOST = "mqtt.trafficlight.abzb";  // your own host name
+static const char* const MQTT_HOST = "192.168.1.10";  // your own host name
 static const uint16_t    MQTT_PORT = 1883;
 
 // topics
