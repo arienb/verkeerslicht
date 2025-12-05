@@ -8,8 +8,8 @@
 // On node B (slave):
 //   NODE_ID  'B'
 //   IS_MASTER 0
-#define NODE_ID   'B'    // change to 'B' on the second board
-#define IS_MASTER 0      // 1 = master (A), 0 = slave (B)
+#define NODE_ID   'A'    // change to 'B' on the second board
+#define IS_MASTER 1      // 1 = master (A), 0 = slave (B)
 
 // ========= LED PINS (adjust to YOUR wiring) =========
 static const uint8_t PIN_LED_RED    = 0;
@@ -40,11 +40,11 @@ static const uint16_t HEARTBEAT_INTERVAL_MS = 1000;    // stuur elke 1 s HB
 
 // ========= WiFi + MQTT (alleen gebruikt op master / node A) =========
 #if IS_MASTER
-static const char* const WIFI_SSID = "TP-Link_42C4";
-static const char* const WIFI_PASS = "66243359";
+static const char* const WIFI_SSID = "Pixel";
+static const char* const WIFI_PASS = "123456789";
 
 // You can use a hostname here (DNS must be able to resolve it)
-static const char* const MQTT_HOST = "192.168.1.10";  // your own host name
+static const char* const MQTT_HOST = "10.130.155.30";
 static const uint16_t    MQTT_PORT = 1883;
 
 // topics

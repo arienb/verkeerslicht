@@ -32,8 +32,7 @@
   <div id="status">Nog niet verbonden...</div>
 
   <script>
-    // Pas dit aan naar jouw broker
-    const brokerHost = "ws://localhost:9001"; // Mosquitto WebSocket poort
+    const brokerHost = "ws://localhost:9001";
     const clientId = "WebInterface_" + Math.random().toString(16).substr(2, 8);
 
     const client = new Paho.MQTT.Client(brokerHost, clientId);
