@@ -126,6 +126,7 @@ static char        lastGreenDir = 'B'; // zodat A eerst groen wordt
 static uint16_t tGreenA = T_GREEN_A_DEFAULT;
 static uint16_t tGreenB = T_GREEN_B_DEFAULT;
 static uint16_t tClear  = T_CLEAR_DEFAULT;
+static uint32_t lastMqttAttemptMs = 0;
 
 // WiFi / MQTT
 static WiFiClient espClient;
@@ -191,25 +192,28 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length)
     }
 }
 
-static void mqttEnsureConnected()
+static void mqttEnsureConnected(uint32_t nowMs)
 {
-    while (!mqtt.connected())
+    if (mqtt.connected()) return;
+
+    if (nowMs - lastMqttAttemptMs < 2000)
+        return;
+
+    lastMqttAttemptMs = nowMs;
+
+    Serial.print("[MQTT] Connecting...");
+    if (mqtt.connect(MQTT_CLIENT_ID))
     {
-        Serial.print("[MQTT] Connecting...");
-        if (mqtt.connect(MQTT_CLIENT_ID))
-        {
-            Serial.println("connected");
-            mqtt.subscribe(MQTT_TOPIC_CONFIG);
-        }
-        else
-        {
-            Serial.print("failed, rc=");
-            Serial.print(mqtt.state());
-            Serial.println(" retry in 2 seconds");
-            delay(2000);
-        }
+        Serial.println("connected");
+        mqtt.subscribe(MQTT_TOPIC_CONFIG);
+    }
+    else
+    {
+        Serial.print("failed, rc=");
+        Serial.println(mqtt.state());
     }
 }
+
 
 static void mqttPublishStatus()
 {
@@ -422,17 +426,12 @@ void commLoop(uint32_t nowMs)
 
 #if IS_MASTER
     // Master: global verkeerslicht-FSM + MQTT
-    mqttEnsureConnected();
+    mqttEnsureConnected(nowMs);
     mqtt.loop();
 
     updateGlobalFSM(nowMs);
 
-    static uint32_t lastStatusPublishMs = 0;
-    if (nowMs - lastStatusPublishMs >= 1000UL)
-    {
-        lastStatusPublishMs = nowMs;
-        mqttPublishStatus();
-    }
+
 #else
     // Slave: als peer dood is -> zelf in ERROR
     if (!peerAlive)

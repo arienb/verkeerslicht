@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Verkeerslicht Configuratie</title>
-  <script src="https://unpkg.com/paho-mqtt/mqttws31.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js%22%3E"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 2em; }
     label { display: block; margin-top: 1em; }
@@ -32,10 +32,19 @@
   <div id="status">Nog niet verbonden...</div>
 
   <script>
-    const brokerHost = "ws://192.168.0.105:9001";
     const clientId = "WebInterface_" + Math.random().toString(16).substr(2, 8);
 
-    const client = new Paho.MQTT.Client(brokerHost, clientId);
+    const client = new Paho.MQTT.Client(
+      "192.168.0.105",
+      9001,
+      "/mqtt",
+      clientId
+    );
+
+    client.connect({
+      onSuccess: onConnect,
+      useSSL: false
+    });
 
     client.onConnectionLost = (responseObject) => {
       document.getElementById("status").innerText = "Verbinding verloren!";
@@ -50,8 +59,6 @@
       // Subscribe op status topic (optioneel)
       client.subscribe("traffic/status");
     }
-
-    client.connect({ onSuccess: onConnect });
 
     function sendConfig() {
       const a = document.getElementById("greenA").value;
