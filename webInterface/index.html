@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Verkeerslicht Configuratie</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js%22%3E"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 2em; }
     label { display: block; margin-top: 1em; }
@@ -40,7 +40,7 @@
       "/mqtt",
       clientId
     );
-
+    
     client.connect({
       onSuccess: onConnect,
       useSSL: false

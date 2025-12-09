@@ -132,8 +132,8 @@ static uint32_t lastMqttAttemptMs = 0;
 static WiFiClient espClient;
 static PubSubClient mqtt(espClient);
 
-static void mqttPublishStatus();
-static void mqttPublishGlobal(const char* text);
+//static void mqttPublishStatus();
+//static void mqttPublishGlobal(const char* text);
 
 static void connectWiFi()
 {
@@ -183,7 +183,7 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length)
             Serial.print("/");
             Serial.println(tClear);
 
-            mqttPublishGlobal("CONFIG_UPDATED");
+            //mqttPublishGlobal("CONFIG_UPDATED");
         }
         else
         {
@@ -214,7 +214,7 @@ static void mqttEnsureConnected(uint32_t nowMs)
     }
 }
 
-
+/*
 static void mqttPublishStatus()
 {
     if (!mqtt.connected()) return;
@@ -236,7 +236,7 @@ static void mqttPublishGlobal(const char* text)
 {
     if (!mqtt.connected()) return;
     mqtt.publish(MQTT_TOPIC_GLOBAL, text, true);
-}
+}*/
 
 // globale A/B richting FSM
 static void updateGlobalFSM(uint32_t nowMs)
@@ -249,7 +249,7 @@ static void updateGlobalFSM(uint32_t nowMs)
             gState = GS_ERROR;
             trafficLightSetCommand(STATE_ERROR);
             sendCommandToPeer('E');
-            mqttPublishGlobal("ERROR_NO_COMM");
+            //mqttPublishGlobal("ERROR_NO_COMM");
             Serial.println("[FSM] -> ERROR (no communication)");
         }
         return;
@@ -264,7 +264,7 @@ static void updateGlobalFSM(uint32_t nowMs)
         lastGreenDir = 'B'; // zodat A eerst krijgt
         trafficLightSetCommand(STATE_RED);
         sendCommandToPeer('R');
-        mqttPublishGlobal("ALL_RED_INIT");
+        //mqttPublishGlobal("ALL_RED_INIT");
         Serial.println("[FSM] INIT -> ALL_RED");
         break;
 
@@ -275,7 +275,7 @@ static void updateGlobalFSM(uint32_t nowMs)
         lastGreenDir = 'B'; // start terug bij A
         trafficLightSetCommand(STATE_RED);
         sendCommandToPeer('R');
-        mqttPublishGlobal("RECOVER_ALL_RED");
+        //mqttPublishGlobal("RECOVER_ALL_RED");
         Serial.println("[FSM] ERROR -> ALL_RED");
         break;
 
@@ -292,7 +292,7 @@ static void updateGlobalFSM(uint32_t nowMs)
                 trafficLightSetCommand(STATE_GREEN); // A groen
                 sendCommandToPeer('R');             // B rood
 
-                mqttPublishGlobal("A_GREEN");
+                //mqttPublishGlobal("A_GREEN");
                 Serial.println("[FSM] ALL_RED -> A_GREEN");
             }
             else
@@ -305,7 +305,7 @@ static void updateGlobalFSM(uint32_t nowMs)
                 trafficLightSetCommand(STATE_RED);  // A rood
                 sendCommandToPeer('G');             // B groen
 
-                mqttPublishGlobal("B_GREEN");
+                //mqttPublishGlobal("B_GREEN");
                 Serial.println("[FSM] ALL_RED -> B_GREEN");
             }
         }
@@ -321,7 +321,7 @@ static void updateGlobalFSM(uint32_t nowMs)
             trafficLightSetCommand(STATE_RED);  // A: green->yellow->red
             sendCommandToPeer('R');             // B rood
 
-            mqttPublishGlobal("ALL_RED_AFTER_A");
+            //mqttPublishGlobal("ALL_RED_AFTER_A");
             Serial.println("[FSM] A_GREEN -> ALL_RED");
         }
         break;
@@ -335,7 +335,7 @@ static void updateGlobalFSM(uint32_t nowMs)
             trafficLightSetCommand(STATE_RED);  // A rood
             sendCommandToPeer('R');             // B: green->yellow->red
 
-            mqttPublishGlobal("ALL_RED_AFTER_B");
+            //mqttPublishGlobal("ALL_RED_AFTER_B");
             Serial.println("[FSM] B_GREEN -> ALL_RED");
         }
         break;
