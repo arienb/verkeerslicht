@@ -21,7 +21,7 @@ static const uint8_t PIN_LED_GREEN  = 2;
 static const uint8_t LORA_NSS_PIN  = 18;      // NSS (SS)
 static const uint8_t LORA_RST_PIN  = 23;      // RST
 static const uint8_t LORA_DIO0_PIN = 26;      // DIO0
-static const long    LORA_BAND     = 868E6;   // same as your test code
+static const long    LORA_BAND     = 868E6;  
 
 // ========= TIMING (seconds) =========
 // Master gebruikt deze als default,
@@ -40,11 +40,11 @@ static const uint16_t HEARTBEAT_INTERVAL_MS = 1000;    // stuur elke 1 s HB
 
 // ========= WiFi + MQTT (alleen gebruikt op master / node A) =========
 #if IS_MASTER
-static const char* const WIFI_SSID = "Pixel";
-static const char* const WIFI_PASS = "123456789";
+static const char* const WIFI_SSID = "TP-Link_42C4";
+static const char* const WIFI_PASS = "66243359";
 
 // You can use a hostname here (DNS must be able to resolve it)
-static const char* const MQTT_HOST = "10.130.155.30";
+static const char* const MQTT_HOST = "192.168.0.105";
 static const uint16_t    MQTT_PORT = 1883;
 
 // topics
