@@ -56,7 +56,6 @@
 
     function onConnect() {
       document.getElementById("status").innerText = "Verbonden met broker";
-      // Subscribe op status topic (optioneel)
       client.subscribe("traffic/status");
     }
 

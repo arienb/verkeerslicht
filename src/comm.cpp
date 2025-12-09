@@ -105,7 +105,7 @@ static void handleLoraMessage(const String& msg, uint32_t nowMs)
     }
 }
 
-// ========= Master-specifieke zaken (A) =========
+// ========= Master-specifiek (A) =========
 #if IS_MASTER
 
 // globale richting state machine
@@ -119,9 +119,9 @@ enum GlobalState : uint8_t {
 
 static GlobalState gState = GS_INIT;
 static uint32_t    gStateStartMs = 0;
-static char        lastGreenDir = 'B'; // zodat A eerst groen wordt
+static char        lastGreenDir = 'B'; // master wordt eerst groen
 
-// huidige tijden in seconden (config via MQTT)
+// huidige tijden in seconden (van MQTT)
 static uint16_t tGreenA = T_GREEN_A_DEFAULT;
 static uint16_t tGreenB = T_GREEN_B_DEFAULT;
 static uint16_t tClear  = T_CLEAR_DEFAULT;
@@ -163,7 +163,7 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length)
 
     if (t == MQTT_TOPIC_CONFIG)
     {
-        // Expect "TgreenA,TgreenB,Tclear", e.g. "20,15,5"
+        // Expect "TgreenA,TgreenB,Tclear", e.g. "10,10,5"
         uint16_t a = 0, b = 0, c = 0;
         int parsed = sscanf(msg.c_str(), "%hu,%hu,%hu", &a, &b, &c);
         if (parsed == 3)
@@ -316,7 +316,6 @@ void commInit()
 {
     Serial.println("Initialising LoRa...");
 
-    // Use same pins as defined in config.h
     LoRa.setPins(LORA_NSS_PIN, LORA_RST_PIN, LORA_DIO0_PIN);
 
     if (!LoRa.begin(LORA_BAND))
@@ -327,18 +326,18 @@ void commInit()
     }
     Serial.println("LoRa initialised.");
 
-    // basic radio settings
+    // basic radio settings (LoRa)
     LoRa.setSignalBandwidth(125E3);
     LoRa.setSpreadingFactor(8);
     LoRa.setCodingRate4(5);
     LoRa.enableCrc();
 
 #if IS_MASTER
-    connectWiFi();
+    // connecten met wifi + mqtt
+    connectWiFi();  
     mqtt.setServer(MQTT_HOST, MQTT_PORT);
     mqtt.setCallback(mqttCallback);
 #endif
-
     lastHeartbeatSentMs = millis();
     lastPeerSeenMs = 0;
     peerAlive = false;
@@ -392,9 +391,7 @@ void commLoop(uint32_t nowMs)
     // Master: global verkeerslicht-FSM + MQTT
     mqttEnsureConnected(nowMs);
     mqtt.loop();
-
     updateGlobalFSM(nowMs);
-
 
 #else
     // Slave: als peer dood is -> zelf in ERROR
