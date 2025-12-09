@@ -52,10 +52,14 @@ void trafficLightSetCommand(TrafficState cmdState)
     // ERROR heeft hoogste prioriteit, meteen omschakelen
     if (cmdState == STATE_ERROR)
     {
-        currentState = STATE_ERROR;
-        errorYellowOn = true;
-        errorBlinkStartMs = millis();
-        applyLedOutputs();
+        // Alleen initialiseren als we NIET al in ERROR zitten
+        if (currentState != STATE_ERROR)
+        {
+            currentState = STATE_ERROR;
+            errorYellowOn = true;
+            errorBlinkStartMs = millis();   // <-- TERUG NAAR millis()
+            applyLedOutputs();
+        }
         return;
     }
 

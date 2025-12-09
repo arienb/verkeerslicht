@@ -8,8 +8,8 @@
 // On node B (slave):
 //   NODE_ID  'B'
 //   IS_MASTER 0
-#define NODE_ID   'A'    // change to 'B' on the second board
-#define IS_MASTER 1      // 1 = master (A), 0 = slave (B)
+#define NODE_ID   'B'    // change to 'B' on the second board
+#define IS_MASTER 0      // 1 = master (A), 0 = slave (B)
 
 // ========= LED PINS (adjust to YOUR wiring) =========
 static const uint8_t PIN_LED_RED    = 0;
@@ -32,7 +32,7 @@ static const uint16_t T_CLEAR_DEFAULT   = 5;    // beide rood tussen richtingen
 
 // Vast volgens opgave
 static const uint16_t T_YELLOW_SECONDS        = 3;     // geel tussen groen -> rood
-static const uint16_t COMM_TIMEOUT_SECONDS    = 10;    // max 10 s zonder communicatie
+static const uint16_t COMM_TIMEOUT_SECONDS    = 2;    // max 10 s zonder communicatie
 static const uint16_t ERROR_BLINK_INTERVAL_MS = 1000;  // geel knippert elke 1 s
 
 // LoRa heartbeat (tussen de verkeerslichten)
