@@ -74,7 +74,6 @@ static void handleLoraMessage(const String& msg, uint32_t nowMs)
             {
                 lastPeerSeenMs = nowMs;
                 peerAlive = true;
-                // Serial.printf("[LoRa] HB from %c\n", from);
             }
         }
     }
@@ -132,9 +131,6 @@ static uint32_t lastMqttAttemptMs = 0;
 static WiFiClient espClient;
 static PubSubClient mqtt(espClient);
 
-//static void mqttPublishStatus();
-//static void mqttPublishGlobal(const char* text);
-
 static void connectWiFi()
 {
     Serial.print("Connecting to WiFi: ");
@@ -182,8 +178,6 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length)
             Serial.print(tGreenB);
             Serial.print("/");
             Serial.println(tClear);
-
-            //mqttPublishGlobal("CONFIG_UPDATED");
         }
         else
         {
@@ -214,30 +208,6 @@ static void mqttEnsureConnected(uint32_t nowMs)
     }
 }
 
-/*
-static void mqttPublishStatus()
-{
-    if (!mqtt.connected()) return;
-
-    TrafficState st = trafficLightGetState();
-
-    String payload;
-    payload.reserve(32);
-    payload += NODE_ID;
-    payload += ",";
-    payload += stateToString(st);
-    payload += ",";
-    payload += (peerAlive ? "peer_ok" : "peer_lost");
-
-    mqtt.publish(MQTT_TOPIC_STATUS, payload.c_str(), true);
-}
-
-static void mqttPublishGlobal(const char* text)
-{
-    if (!mqtt.connected()) return;
-    mqtt.publish(MQTT_TOPIC_GLOBAL, text, true);
-}*/
-
 // globale A/B richting FSM
 static void updateGlobalFSM(uint32_t nowMs)
 {
@@ -249,7 +219,6 @@ static void updateGlobalFSM(uint32_t nowMs)
             gState = GS_ERROR;
             trafficLightSetCommand(STATE_ERROR);
             sendCommandToPeer('E');
-            //mqttPublishGlobal("ERROR_NO_COMM");
             Serial.println("[FSM] -> ERROR (no communication)");
         }
         return;
@@ -264,7 +233,6 @@ static void updateGlobalFSM(uint32_t nowMs)
         lastGreenDir = 'B'; // zodat A eerst krijgt
         trafficLightSetCommand(STATE_RED);
         sendCommandToPeer('R');
-        //mqttPublishGlobal("ALL_RED_INIT");
         Serial.println("[FSM] INIT -> ALL_RED");
         break;
 
@@ -275,7 +243,6 @@ static void updateGlobalFSM(uint32_t nowMs)
         lastGreenDir = 'B'; // start terug bij A
         trafficLightSetCommand(STATE_RED);
         sendCommandToPeer('R');
-        //mqttPublishGlobal("RECOVER_ALL_RED");
         Serial.println("[FSM] ERROR -> ALL_RED");
         break;
 
@@ -292,7 +259,6 @@ static void updateGlobalFSM(uint32_t nowMs)
                 trafficLightSetCommand(STATE_GREEN); // A groen
                 sendCommandToPeer('R');             // B rood
 
-                //mqttPublishGlobal("A_GREEN");
                 Serial.println("[FSM] ALL_RED -> A_GREEN");
             }
             else
@@ -410,8 +376,6 @@ void commLoop(uint32_t nowMs)
         String hb = "HB:";
         hb += (char)NODE_ID;
         loraSend(hb);
-        // Serial.print("[LoRa] Sent HB: ");
-        // Serial.println(hb);
     }
 
     // ===== Communicatie timeout check =====
