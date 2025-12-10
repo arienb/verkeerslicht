@@ -57,7 +57,7 @@ void trafficLightSetCommand(TrafficState cmdState)
         {
             currentState = STATE_ERROR;
             errorYellowOn = true;
-            errorBlinkStartMs = millis();   // <-- TERUG NAAR millis()
+            errorBlinkStartMs = millis(); 
             applyLedOutputs();
         }
         return;
@@ -76,7 +76,7 @@ void trafficLightSetCommand(TrafficState cmdState)
         {
             currentState = STATE_YELLOW;
             yellowStartMs = millis();
-            applyLedOutputs(); // toon geel
+            applyLedOutputs();
         }
         else
         {
