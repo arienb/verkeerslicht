@@ -29,7 +29,7 @@
 
   <button onclick="sendConfig()">Verstuur Configuratie</button>
 
-  <div id="status">Nog niet verbonden...</div>
+  <div id="statusMessage">Nog niet verbonden...</div>
 
   <script>
     const clientId = "WebInterface_" + Math.random().toString(16).substr(2, 8);
@@ -47,15 +47,11 @@
     });
 
     client.onConnectionLost = (responseObject) => {
-      document.getElementById("status").innerText = "Verbinding verloren!";
-    };
-
-    client.onMessageArrived = (message) => {
-      console.log("MQTT RX:", message.destinationName, message.payloadString);
+      document.getElementById("statusMessage").innerText = "Verbinding verloren!";
     };
 
     function onConnect() {
-      document.getElementById("status").innerText = "Verbonden met broker";
+      document.getElementById("statusMessage").innerText = "Verbonden met broker";
     }
 
     function sendConfig() {
@@ -68,7 +64,7 @@
       message.destinationName = "traffic/config";
       client.send(message);
 
-      document.getElementById("status").innerText =
+      document.getElementById("statusMessage").innerText =
         "Config verzonden: " + payload;
     }
   </script>

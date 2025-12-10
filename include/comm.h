@@ -2,6 +2,8 @@
 #include <Arduino.h>
 #include "config.h"
 #include "traffic_light.h"
+#include "comm_lora.h"
+#include "comm_mqtt.h"
 
 // Initialiseer LoRa (+ WiFi/MQTT op master)
 void commInit();

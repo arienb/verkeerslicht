@@ -41,6 +41,4 @@ static const uint16_t    MQTT_PORT = 1883;
 // ========= topics =========
 static const char* const MQTT_CLIENT_ID    = "TrafficMaster";
 static const char* const MQTT_TOPIC_CONFIG = "traffic/config";
-static const char* const MQTT_TOPIC_STATUS = "traffic/status";
-static const char* const MQTT_TOPIC_GLOBAL = "traffic/global";
 #endif

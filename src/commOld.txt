@@ -12,7 +12,14 @@
 
 // ========= Gemeenschappelijke state (zowel master als slave) =========
 
+static uint32_t lastHeartbeatSentMs = 0;
+static uint32_t lastPeerSeenMs = 0;
+static bool     peerAlive = false;
 
+bool commPeerAlive()
+{
+    return peerAlive;
+}
 
 // helper: TrafficState -> korte string
 static const char* stateToString(TrafficState st)
@@ -24,6 +31,77 @@ static const char* stateToString(TrafficState st)
     case STATE_YELLOW: return "YELLOW";
     case STATE_ERROR:  return "ERROR";
     default:           return "UNKNOWN";
+    }
+}
+
+// LoRa bericht versturen (string)
+static void loraSend(const String& msg)
+{
+    LoRa.beginPacket();
+    LoRa.print(msg);
+    LoRa.endPacket();
+}
+
+// CMD naar peer sturen (master gebruikt dit)
+static void sendCommandToPeer(char stateChar)
+{
+    // CMD:<TARGET>:<STATE>
+    // TARGET is peer: als wij A zijn -> B, omgekeerd.
+    char target = (NODE_ID == 'A') ? 'B' : 'A';
+
+    String msg = "CMD:";
+    msg += target;
+    msg += ':';
+    msg += stateChar; // 'R','G','E'
+    loraSend(msg);
+
+    Serial.print("[LoRa] Sent command to ");
+    Serial.print(target);
+    Serial.print(" -> ");
+    Serial.println(msg);
+}
+
+// LoRa message verwerken
+static void handleLoraMessage(const String& msg, uint32_t nowMs)
+{
+    if (msg.startsWith("HB:"))
+    {
+        // Heartbeat: "HB:A" / "HB:B"
+        if (msg.length() >= 4)
+        {
+            char from = msg.charAt(3);
+            if (from != NODE_ID)
+            {
+                lastPeerSeenMs = nowMs;
+                peerAlive = true;
+            }
+        }
+    }
+    else if (msg.startsWith("CMD:"))
+    {
+        // Command: "CMD:A:R" of "CMD:B:G"
+        // indices: 0 1 2 3 4 5 6
+        // chars :  C M D : T : S
+        if (msg.length() >= 7)
+        {
+            char target = msg.charAt(4);
+            char stateChar = msg.charAt(6);
+
+            if (target == NODE_ID)
+            {
+                TrafficState st = STATE_RED;
+                if      (stateChar == 'G') st = STATE_GREEN;
+                else if (stateChar == 'R') st = STATE_RED;
+                else if (stateChar == 'E') st = STATE_ERROR;
+
+                Serial.print("[LoRa] CMD for me: ");
+                Serial.println(msg);
+
+                trafficLightSetCommand(st);
+                lastPeerSeenMs = nowMs;
+                peerAlive = true;
+            }
+        }
     }
 }
 
@@ -43,11 +121,15 @@ static GlobalState gState = GS_INIT;
 static uint32_t    gStateStartMs = 0;
 static char        lastGreenDir = 'B'; // master wordt eerst groen
 
-
+// huidige tijden in seconden (van MQTT)
+static uint16_t tGreenA = T_GREEN_A_DEFAULT;
+static uint16_t tGreenB = T_GREEN_B_DEFAULT;
+static uint16_t tClear  = T_CLEAR_DEFAULT;
+static uint32_t lastMqttAttemptMs = 0;
 
 // WiFi / MQTT
-static WiFiClient wifiClient;
-static PubSubClient mqtt(wifiClient);
+static WiFiClient espClient;
+static PubSubClient mqtt(espClient);
 
 static void connectWiFi()
 {
@@ -65,6 +147,65 @@ static void connectWiFi()
     Serial.println("\nWiFi connected");
     Serial.print("IP: ");
     Serial.println(WiFi.localIP());
+}
+
+static void mqttCallback(char* topic, byte* payload, unsigned int length)
+{
+    String t(topic);
+    String msg;
+    for (unsigned int i = 0; i < length; ++i)
+        msg += (char)payload[i];
+
+    Serial.print("[MQTT] Message on ");
+    Serial.print(t);
+    Serial.print(" : ");
+    Serial.println(msg);
+
+    if (t == MQTT_TOPIC_CONFIG)
+    {
+        // Expect "TgreenA,TgreenB,Tclear", e.g. "10,10,5"
+        uint16_t a = 0, b = 0, c = 0;
+        int parsed = sscanf(msg.c_str(), "%hu,%hu,%hu", &a, &b, &c);
+        if (parsed == 3)
+        {
+            tGreenA = a;
+            tGreenB = b;
+            tClear  = c;
+
+            Serial.print("[CFG] New timings A/B/clear = ");
+            Serial.print(tGreenA);
+            Serial.print("/");
+            Serial.print(tGreenB);
+            Serial.print("/");
+            Serial.println(tClear);
+        }
+        else
+        {
+            Serial.println("[CFG] Invalid config payload, expected: \"20,15,5\"");
+        }
+    }
+}
+
+static void mqttEnsureConnected(uint32_t nowMs)
+{
+    if (mqtt.connected()) return;
+
+    if (nowMs - lastMqttAttemptMs < 2000)
+        return;
+
+    lastMqttAttemptMs = nowMs;
+
+    Serial.print("[MQTT] Connecting...");
+    if (mqtt.connect(MQTT_CLIENT_ID))
+    {
+        Serial.println("connected");
+        mqtt.subscribe(MQTT_TOPIC_CONFIG);
+    }
+    else
+    {
+        Serial.print("failed, rc=");
+        Serial.println(mqtt.state());
+    }
 }
 
 // globale A/B richting FSM
