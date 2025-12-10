@@ -67,6 +67,39 @@ static void connectWiFi()
     Serial.println(WiFi.localIP());
 }
 
+static void setAllRed(uint32_t nowMs, const char* reason)
+{
+    gState = GS_ALL_RED;
+    gStateStartMs = nowMs;
+    lastGreenDir = 'B'; // start terug bij A
+    trafficLightSetCommand(STATE_RED);
+    sendCommandToPeer('R');
+    Serial.print("[FSM] -> ALL_RED (");
+    Serial.print(reason);
+    Serial.println(")");
+}
+
+static void switchToAGreen(uint32_t nowMs)
+{
+    gState = GS_A_GREEN;
+    gStateStartMs = nowMs;
+    lastGreenDir = 'A';
+    trafficLightSetCommand(STATE_GREEN);
+    sendCommandToPeer('R');
+    Serial.println("[FSM] ALL_RED -> A_GREEN");
+}
+
+static void switchToBGreen(uint32_t nowMs)
+{
+    gState = GS_B_GREEN;
+    gStateStartMs = nowMs;
+    lastGreenDir = 'B';
+    trafficLightSetCommand(STATE_RED);
+    sendCommandToPeer('G');
+    Serial.println("[FSM] ALL_RED -> B_GREEN");
+}
+
+
 // globale A/B richting FSM
 static void updateGlobalFSM(uint32_t nowMs)
 {
@@ -87,82 +120,31 @@ static void updateGlobalFSM(uint32_t nowMs)
     {
     case GS_INIT:
         // eerste keer dat alles leeft -> alles rood, dan A groen
-        gState = GS_ALL_RED;
-        gStateStartMs = nowMs;
-        lastGreenDir = 'B'; // zodat A eerst krijgt
-        trafficLightSetCommand(STATE_RED);
-        sendCommandToPeer('R');
-        Serial.println("[FSM] INIT -> ALL_RED");
+        setAllRed(nowMs, "INIT");
         break;
+
 
     case GS_ERROR:
         // communicatie terug: eerst veilig alles rood
-        gState = GS_ALL_RED;
-        gStateStartMs = nowMs;
-        lastGreenDir = 'B'; // start terug bij A
-        trafficLightSetCommand(STATE_RED);
-        sendCommandToPeer('R');
-        Serial.println("[FSM] ERROR -> ALL_RED");
+        setAllRed(nowMs, "RECOVER");
         break;
 
     case GS_ALL_RED:
         if (nowMs - gStateStartMs >= (uint32_t)tClear * 1000UL)
         {
-            if (lastGreenDir == 'B')
-            {
-                // nu A groen, B rood
-                gState = GS_A_GREEN;
-                gStateStartMs = nowMs;
-                lastGreenDir = 'A';
-
-                trafficLightSetCommand(STATE_GREEN); // A groen
-                sendCommandToPeer('R');             // B rood
-
-                Serial.println("[FSM] ALL_RED -> A_GREEN");
-            }
-            else
-            {
-                // nu B groen, A rood
-                gState = GS_B_GREEN;
-                gStateStartMs = nowMs;
-                lastGreenDir = 'B';
-
-                trafficLightSetCommand(STATE_RED);  // A rood
-                sendCommandToPeer('G');             // B groen
-
-                //mqttPublishGlobal("B_GREEN");
-                Serial.println("[FSM] ALL_RED -> B_GREEN");
-            }
+            if (lastGreenDir == 'B') switchToAGreen(nowMs);
+            else switchToBGreen(nowMs);
         }
         break;
 
     case GS_A_GREEN:
         if (nowMs - gStateStartMs >= (uint32_t)tGreenA * 1000UL)
-        {
-            // richting wisselen: eerst alles rood
-            gState = GS_ALL_RED;
-            gStateStartMs = nowMs;
-
-            trafficLightSetCommand(STATE_RED);  // A: green->yellow->red
-            sendCommandToPeer('R');             // B rood
-
-            //mqttPublishGlobal("ALL_RED_AFTER_A");
-            Serial.println("[FSM] A_GREEN -> ALL_RED");
-        }
+            setAllRed(nowMs, "AFTER_A");
         break;
 
     case GS_B_GREEN:
         if (nowMs - gStateStartMs >= (uint32_t)tGreenB * 1000UL)
-        {
-            gState = GS_ALL_RED;
-            gStateStartMs = nowMs;
-
-            trafficLightSetCommand(STATE_RED);  // A rood
-            sendCommandToPeer('R');             // B: green->yellow->red
-
-            //mqttPublishGlobal("ALL_RED_AFTER_B");
-            Serial.println("[FSM] B_GREEN -> ALL_RED");
-        }
+            setAllRed(nowMs, "AFTER_B");
         break;
     }
 }
