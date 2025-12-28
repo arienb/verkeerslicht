@@ -110,7 +110,7 @@ static void updateGlobalFSM(uint32_t nowMs)
         {
             gState = GS_ERROR;
             trafficLightSetCommand(STATE_ERROR);
-            sendCommandToPeer('E');
+            sendCommandToPeer('E'); //isdit nodig?
             Serial.println("[FSM] -> ERROR (no communication)");
         }
         return;
