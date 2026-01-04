@@ -10,10 +10,6 @@
   #include <cstdio>
 #endif
 
-// ========= Gemeenschappelijke state (zowel master als slave) =========
-
-
-
 // helper: TrafficState -> korte string
 static const char* stateToString(TrafficState st)
 {
@@ -103,14 +99,14 @@ static void switchToBGreen(uint32_t nowMs)
 // globale A/B richting FSM
 static void updateGlobalFSM(uint32_t nowMs)
 {
-    // als peer weg is => ERROR
+    // als peer weg is -> ERROR
     if (!peerAlive)
     {
         if (gState != GS_ERROR)
         {
             gState = GS_ERROR;
             trafficLightSetCommand(STATE_ERROR);
-            sendCommandToPeer('E'); //isdit nodig?
+            sendCommandToPeer('E');
             Serial.println("[FSM] -> ERROR (no communication)");
         }
         return;

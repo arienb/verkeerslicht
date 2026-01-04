@@ -51,7 +51,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length)
 
     if (t == MQTT_TOPIC_CONFIG)
     {
-        // Expect "TgreenA,TgreenB,Tclear", e.g. "10,10,5"
+        // "TgreenA,TgreenB,Tclear"
         uint16_t a = 0, b = 0, c = 0;
         int parsed = sscanf(msg.c_str(), "%hu,%hu,%hu", &a, &b, &c);
         if (parsed == 3)
