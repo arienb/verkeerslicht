@@ -4,15 +4,15 @@
 #include "config.h"
 #include <WiFiClient.h>
 
-static WiFiClient wifiClient;
-extern PubSubClient mqtt(wifiClient);
+WiFiClient wifiClient;
+PubSubClient mqtt(wifiClient);
 
-extern uint32_t lastMqttAttemptMs = 0;
+uint32_t lastMqttAttemptMs = 0;
 
 // huidige tijden in seconden
-static uint16_t tGreenA = T_GREEN_A_DEFAULT;
-static uint16_t tGreenB = T_GREEN_B_DEFAULT;
-static uint16_t tClear  = T_CLEAR_DEFAULT;
+uint16_t tGreenA = T_GREEN_A_DEFAULT;
+uint16_t tGreenB = T_GREEN_B_DEFAULT;
+uint16_t tClear  = T_CLEAR_DEFAULT;
 
 
 void mqttEnsureConnected(uint32_t nowMs)

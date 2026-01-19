@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include "config.h"
+#include "comm_mqtt.h"
 
 #if IS_MASTER
   #include <WiFi.h>
@@ -43,7 +44,6 @@ static char        lastGreenDir = 'B'; // master wordt eerst groen
 
 // WiFi / MQTT
 static WiFiClient wifiClient;
-static PubSubClient mqtt(wifiClient);
 
 static void connectWiFi()
 {

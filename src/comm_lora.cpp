@@ -1,12 +1,11 @@
-#pragma once
 #include "comm_lora.h"
 #include <comm.h>
 #include <LoRa.h>
 #include "config.h"
 
-extern uint32_t lastHeartbeatSentMs = 0;
-extern uint32_t lastPeerSeenMs = 0;
-extern bool peerAlive = false;
+uint32_t lastHeartbeatSentMs = 0;
+uint32_t lastPeerSeenMs = 0;
+bool peerAlive = false;
 
 bool commPeerAlive()
 {
